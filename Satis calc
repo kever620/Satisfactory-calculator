@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satisfactory — Max Throughput Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1e24;
+    --card: #242930;
+    --card2: #2d3540;
+    --border: #3a4454;
+    --amber: #f5a623;
+    --amber-dim: #b87a1a;
+    --green: #4caf6e;
+    --red: #e05555;
+    --blue: #5b9bd5;
+    --purple: #a07fd4;
+    --text: #c8d4e0;
+    --text-dim: #7a8fa8;
+    --text-bright: #eaf2ff;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0e1117 0%, #1a1e24 60%, #1f2835 100%);
+    border-bottom: 2px solid var(--amber);
+    padding: 20px 24px 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .logo-icon {
+    width: 36px; height: 36px; background: var(--amber);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    flex-shrink: 0; animation: pulse-hex 3s ease-in-out infinite;
+  }
+  @keyframes pulse-hex {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(245,166,35,0); }
+  }
+  h1 { font-size: 20px; font-weight: 700; color: var(--text-bright); }
+  h1 span { color: var(--amber); }
+  .subtitle { font-size: 11px; color: var(--text-dim); font-family: var(--mono); letter-spacing: 0.5px; margin-top: 2px; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .search-wrap { position: relative; flex: 1; min-width: 180px; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+  input[type="search"] {
+    width: 100%; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 10px 8px 32px;
+    color: var(--text-bright); font-family: var(--sans); font-size: 13px; outline: none; transition: border-color 0.2s;
+  }
+  input[type="search"]:focus { border-color: var(--amber); }
+  input[type="search"]::placeholder { color: var(--text-dim); }
+  .filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--card2); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 11px; border-radius: 6px; font-family: var(--sans); font-size: 11px;
+    font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--amber); color: var(--text); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* MINER BAR */
+  .miner-bar {
+    background: #111418; border-bottom: 1px solid var(--border);
+    padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .miner-label { font-size: 10px; font-family: var(--mono); color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .seg-group { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .seg-btn {
+    background: var(--card2); border: none; border-right: 1px solid var(--border);
+    color: var(--text-dim); padding: 5px 10px; font-family: var(--mono);
+    font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.15s; line-height: 1.4;
+  }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn:hover { background: var(--card); color: var(--text); }
+  .seg-btn.active { background: var(--amber); color: #111; }
+  .stats-bar { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .stats-bar span { color: var(--amber); font-weight: 600; }
+
+  /* GRID */
+  main { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+  .category-section { margin-bottom: 36px; }
+  .category-title {
+    font-size: 10px; font-family: var(--mono); letter-spacing: 2px; color: var(--text-dim);
+    text-transform: uppercase; margin-bottom: 12px; padding-bottom: 7px;
+    border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;
+  }
+  .category-title::before {
+    content: ''; display: inline-block; width: 5px; height: 5px; background: var(--amber);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+
+  /* CARD */
+  .recipe-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 9px;
+    overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    user-select: none;
+  }
+  .recipe-card:hover { border-color: var(--amber-dim); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .recipe-card:active { transform: scale(0.98); }
+  .card-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .item-icon { width: 28px; height: 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-bright); flex: 1; }
+  .card-tier { font-size: 9px; font-family: var(--mono); padding: 2px 5px; border-radius: 3px; font-weight: 600; }
+  .card-body { padding: 10px 12px; }
+  .throughput-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .throughput-label { font-size: 10px; font-family: var(--mono); color: var(--text-dim); }
+  .throughput-val { font-size: 20px; font-family: var(--mono); font-weight: 600; color: var(--green); }
+  .throughput-unit { font-size: 10px; color: var(--text-dim); font-family: var(--mono); margin-left: 2px; }
+
+  .belt-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .belt-label { font-size: 9px; font-family: var(--mono); color: var(--text-dim); width: 24px; flex-shrink: 0; }
+  .belt-bar-wrap { flex: 1; height: 5px; background: var(--card2); border-radius: 3px; overflow: hidden; position: relative; }
+  .belt-bar-fill { height: 100%; border-radius: 3px; position: relative; overflow: hidden; }
+  .belt-bar-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+    background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 8px);
+    animation: belt-move 0.5s linear infinite;
+  }
+  @keyframes belt-move { from { background-position: 0 0; } to { background-position: 8px 0; } }
+  .belt-pct { font-size: 9px; font-family: var(--mono); width: 28px; text-align: right; flex-shrink: 0; }
+  .tap-hint { font-size: 9px; font-family: var(--mono); color: var(--text-dim); text-align: center; margin-top: 8px; opacity: 0.6; }
+
+  /* EMPTY */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); font-family: var(--mono); }
+  .empty-state .big { font-size: 48px; margin-bottom: 12px; }
+
+  /* ============================================================
+     MODAL
+  ============================================================ */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #1e2530; border: 1px solid var(--border); border-radius: 14px;
+    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+    transform: translateY(20px) scale(0.97); transition: transform 0.2s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: #1e2530; z-index: 10;
+  }
+  .modal-icon { width: 36px; height: 36px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .modal-title { font-size: 17px; font-weight: 700; color: var(--text-bright); flex: 1; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card2); color: var(--text-dim); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+  .modal-body { padding: 16px 18px 20px; }
+
+  .modal-section { margin-bottom: 18px; }
+  .modal-section-title {
+    font-size: 9px; font-family: var(--mono); letter-spacing: 1.5px; color: var(--text-dim);
+    text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .modal-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* OUTPUT ROW */
+  .output-big { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+  .output-num { font-size: 36px; font-family: var(--mono); font-weight: 700; color: var(--green); line-height: 1; }
+  .output-unit { font-size: 14px; font-family: var(--mono); color: var(--text-dim); }
+  .output-sub { font-size: 11px; font-family: var(--mono); color: var(--text-dim); }
+
+  /* POWER SHARDS */
+  .shard-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .shard-btn {
+    flex: 1; min-width: 80px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card2); color: var(--text-dim); padding: 10px 8px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .shard-btn .shard-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+  .shard-btn .shard-label { display: block; font-weight: 600; font-size: 12px; }
+  .shard-btn .shard-sub { display: block; font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+  .shard-btn:hover { border-color: var(--amber); }
+  .shard-btn.active { background: #2a2010; border-color: var(--amber); color: var(--amber); }
+  .shard-btn.active .shard-sub { color: var(--amber-dim); }
+
+  /* MACHINES TABLE */
+  .machines-table { width: 100%; border-collapse: collapse; }
+  .machines-table th {
+    font-size: 9px; font-family: var(--mono); letter-spacing: 1px; color: var(--text-dim);
+    text-align: left; padding: 0 0 6px; border-bottom: 1px solid var(--border); text-transform: uppercase;
+  }
+  .machines-table td { padding: 7px 0; border-bottom: 1px solid #2a3040; font-size: 12px; vertical-align: middle; }
+  .machines-table tr:last-child td { border-bottom: none; }
+  .m-count { font-family: var(--mono); font-weight: 700; font-size: 20px; color: var(--amber); width: 36px; }
+  .m-type { color: var(--text-bright); font-weight: 600; }
+  .m-sub { font-size: 10px; font-family: var(--mono); color: var(--text-dim); margin-top: 2px; }
+  .m-power-cell { text-align: right; font-family: var(--mono); }
+  .m-power-each { font-size: 11px; color: var(--text-dim); }
+  .m-power-total { font-size: 14px; font-weight: 700; color: var(--blue); }
+
+  /* POWER SUMMARY */
+  .power-summary {
+    background: #0e1520; border: 1px solid #2a3a50; border-radius: 8px;
+    padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px;
+  }
+  .ps-label { font-size: 10px; font-family: var(--mono); color: var(--text-dim); margin-bottom: 2px; }
+  .ps-val { font-size: 22px; font-family: var(--mono); font-weight: 700; color: var(--blue); }
+  .ps-unit { font-size: 11px; font-family: var(--mono); color: var(--text-dim); }
+  .ps-warn { font-size: 10px; font-family: var(--mono); color: var(--amber); margin-top: 4px; }
+
+  /* INPUTS SECTION */
+  .inputs-list { display: flex; flex-direction: column; gap: 6px; }
+  .input-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card2); border-radius: 6px; padding: 8px 10px;
+  }
+  .input-name { flex: 1; font-size: 12px; color: var(--text); text-transform: capitalize; }
+  .input-rate-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--blue); }
+  .input-rate-unit { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-left: 2px; }
+
+  /* BELT MINI */
+  .belt-mini-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .belt-mini {
+    background: var(--card2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 8px; text-align: center;
+  }
+  .belt-mini.active-belt { border-color: var(--amber); background: #241a08; }
+  .belt-mini-label { font-size: 9px; font-family: var(--mono); color: var(--text-dim); margin-bottom: 3px; }
+  .belt-mini-pct { font-size: 14px; font-family: var(--mono); font-weight: 700; }
+  .belt-mini-speed { font-size: 9px; font-family: var(--mono); color: var(--text-dim); margin-top: 1px; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    header, .miner-bar { padding-left: 14px; padding-right: 14px; }
+    main { padding: 14px; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo-icon"></div>
+    <div>
+      <h1>SATISFACTORY <span>THROUGHPUT</span></h1>
+      <div class="subtitle">MAX OUTPUT REFERENCE — VANILLA RECIPES</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="search" id="searchInput" placeholder="Search recipes..." autocomplete="off">
+    </div>
+    <div class="filter-group" id="filterBtns">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="ore">Ores</button>
+      <button class="filter-btn" data-cat="ingot">Ingots</button>
+      <button class="filter-btn" data-cat="basic">Basic</button>
+      <button class="filter-btn" data-cat="advanced">Advanced</button>
+      <button class="filter-btn" data-cat="electronics">Electronics</button>
+      <button class="filter-btn" data-cat="industrial">Industrial</button>
+      <button class="filter-btn" data-cat="endgame">Endgame</button>
+    </div>
+  </div>
+</header>
+
+<div class="miner-bar">
+  <div class="miner-label">Miner</div>
+  <div class="seg-group" id="minerSeg">
+    <button class="seg-btn" data-miner="1">MK.1</button>
+    <button class="seg-btn active" data-miner="2">MK.2</button>
+    <button class="seg-btn" data-miner="3">MK.3</button>
+  </div>
+  <div class="miner-label">Node</div>
+  <div class="seg-group" id="nodeSeg">
+    <button class="seg-btn" data-node="1">Impure</button>
+    <button class="seg-btn" data-node="2">Normal</button>
+    <button class="seg-btn active" data-node="3">Pure</button>
+  </div>
+  <div class="miner-label">Belt</div>
+  <div class="seg-group" id="beltSeg">
+    <button class="seg-btn" data-belt="1">MK.1<br><span style="font-size:8px">60/m</span></button>
+    <button class="seg-btn" data-belt="2">MK.2<br><span style="font-size:8px">120/m</span></button>
+    <button class="seg-btn" data-belt="3">MK.3<br><span style="font-size:8px">270/m</span></button>
+    <button class="seg-btn active" data-belt="4">MK.4<br><span style="font-size:8px">480/m</span></button>
+    <button class="seg-btn" data-belt="5">MK.5<br><span style="font-size:8px">780/m</span></button>
+    <button class="seg-btn" data-belt="6">MK.6<br><span style="font-size:8px">1200/m</span></button>
+  </div>
+  <div class="stats-bar" id="statsBar">Showing <span id="visibleCount">0</span> recipes</div>
+</div>
+
+<main id="mainGrid"></main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-icon" id="mIcon"></div>
+      <div class="modal-title" id="mTitle"></div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const BELT_SPEEDS = { 1:60, 2:120, 3:270, 4:480, 5:780, 6:1200 };
+const MINER_BASE  = { 1:60, 2:120, 3:240 };
+const NODE_MULT   = { 1:0.5, 2:1, 3:2 };
+
+// Power shard multipliers: clock speed
+// 0 shards = 100%, 1 = 150%, 2 = 200%, 3 = 250%
+// Power = basePower * (clockSpeed)^1.6  (Satisfactory formula)
+const SHARD_CLOCK = { 0:1.0, 1:1.5, 2:2.0, 3:2.5 };
+
+// Base power consumption per building type (MW)
+const BUILDING_POWER = {
+  'Miner':           5,    // MK1 base; MK2=12, MK3=30 handled separately
+  'Smelter':         4,
+  'Foundry':        16,
+  'Constructor':     4,
+  'Assembler':      15,
+  'Manufacturer':   55,
+  'Refinery':       30,
+  'Blender':        75,
+  'Particle Accelerator': 500,
+  'default':        10,
+};
+
+// Miner power by tier
+const MINER_POWER = { 1:5, 2:12, 3:30 };
+
+const RECIPES = [
+  // ORES
+  { id:'iron_ore',      name:'Iron Ore',       cat:'ore', icon:'🪨', color:'#9e7b5c', building:'Miner', mined:true },
+  { id:'copper_ore',    name:'Copper Ore',     cat:'ore', icon:'🟤', color:'#b87333', building:'Miner', mined:true },
+  { id:'limestone',     name:'Limestone',      cat:'ore', icon:'⬜', color:'#c8b89a', building:'Miner', mined:true },
+  { id:'coal',          name:'Coal',           cat:'ore', icon:'⚫', color:'#444',    building:'Miner', mined:true },
+  { id:'caterium_ore',  name:'Caterium Ore',   cat:'ore', icon:'💛', color:'#d4a017', building:'Miner', mined:true },
+  { id:'raw_quartz',    name:'Raw Quartz',     cat:'ore', icon:'🔷', color:'#e0aaff', building:'Miner', mined:true },
+  { id:'sulfur',        name:'Sulfur',         cat:'ore', icon:'🟡', color:'#d4c31a', building:'Miner', mined:true },
+  { id:'bauxite',       name:'Bauxite',        cat:'ore', icon:'🟥', color:'#cc5500', building:'Miner', mined:true },
+  { id:'uranium',       name:'Uranium',        cat:'ore', icon:'☢️', color:'#39d353', building:'Miner', mined:true },
+  { id:'sam_ore',       name:'SAM Ore',        cat:'ore', icon:'🔮', color:'#8855ff', building:'Miner', mined:true },
+
+  // INGOTS
+  { id:'iron_ingot',    name:'Iron Ingot',     cat:'ingot', icon:'🔩', color:'#7a9ab0', building:'Smelter',    outputPerMin:30,  inputs:[{id:'iron_ore',rate:30}] },
+  { id:'copper_ingot',  name:'Copper Ingot',   cat:'ingot', icon:'🟠', color:'#b87333', building:'Smelter',    outputPerMin:30,  inputs:[{id:'copper_ore',rate:30}] },
+  { id:'caterium_ingot',name:'Caterium Ingot', cat:'ingot', icon:'✨', color:'#d4a017', building:'Smelter',    outputPerMin:15,  inputs:[{id:'caterium_ore',rate:45}] },
+  { id:'steel_ingot',   name:'Steel Ingot',    cat:'ingot', icon:'⚙️', color:'#5b9bd5', building:'Foundry',    outputPerMin:45,  inputs:[{id:'iron_ore',rate:45},{id:'coal',rate:45}] },
+  { id:'aluminum_ingot',name:'Aluminum Ingot', cat:'ingot', icon:'🔘', color:'#a8c0d6', building:'Foundry',    outputPerMin:60,  inputs:[{id:'aluminum_scrap',rate:90},{id:'silica',rate:75}] },
+
+  // BASIC PARTS
+  { id:'iron_plate',    name:'Iron Plate',     cat:'basic', icon:'🟦', color:'#5b7fa8', building:'Constructor', outputPerMin:20,  inputs:[{id:'iron_ingot',rate:30}] },
+  { id:'iron_rod',      name:'Iron Rod',       cat:'basic', icon:'📏', color:'#5b7fa
